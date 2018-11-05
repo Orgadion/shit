@@ -1,49 +1,32 @@
 const ReactDataGrid = require('react-data-grid');
 const React = require('react');
-const Immutable = require('immutable');
+import _ from 'lodash';
 
 class StockViewer extends React.Component {
-    constructor(props, context) {
-        super(props, context);
-        this._columns = this.createColumns();
-        this._rows = this.createRows();
-        this.state = { rows: new Immutable.fromJS(this._rows) };
-    }
 
-    createColumns = () => {
-        let cols = [];
-        Object.keys(this.props.data[0]).forEach(val => cols.push({
-           key:val,
-           name: val.toUpperCase()
-        }));
-        return cols;
-    };
+  rowGetter = rowIdx => this.props.data[rowIdx];
 
-    createRows = () => {
-        let rows = [];
-        const data = this.props.data;
-        for (let rowIdx = 0; rowIdx < data.length; rowIdx++) {
-            let row = {};
-            this._columns.forEach((c, colIdx) => row[c.key] = data[rowIdx][c.key]);
-            rows.push(row);
-        }
+  createColumns(data) {
+    const firstStock = _.first(data);
+    const headers = _.keys(firstStock);
+    return headers.map(header => ({
+      key: header,
+      name: header.toUpperCase()
+    }));
+  }
 
-        return rows;
-    };
-
-    rowGetter = (rowIdx) => {
-        return this.state.rows.get(rowIdx);
-    };
-
-    render() {
-        return  (
-            <ReactDataGrid
-                enableCellSelect={true}
-                columns={this._columns}
-                rowGetter={this.rowGetter}
-                rowsCount={this.state.rows.size}
-                />);
-    }
+  render() {
+    const { data } = this.props;
+    const columns = this.createColumns(data);
+    return (
+      <ReactDataGrid
+        enableCellSelect
+        columns={columns}
+        rowGetter={this.rowGetter}
+        rowsCount={data.length}
+        minHeight={800}
+      />);
+  }
 }
 
 export default StockViewer;

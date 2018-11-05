@@ -1,46 +1,48 @@
 import React, { Component } from 'react';
+import _ from 'lodash';
 import './app.css';
-import StockViewer from "./components/stock-viewer/stock-viewer";
+import StockViewer from './components/stock-viewer/stock-viewer';
 
 export default class App extends Component {
-  state = { longs: null, shorts: null };
-
-  componentDidMount() {
-      setInterval(function(){
-          fetch('/api/getData')
-              .then(res => res.json())
-              .then(this.parseStocks.bind(this));
-      }, 5000);
+  constructor(props) {
+    super(props);
+    this.state = { longs: [], shorts: [] };
   }
 
-  parseStocks(data) {
-    let longMap = new Map();
-    let shortMap = new Map();
+  componentDidMount() {
+    const this2 = this;
+    setInterval(function () {
+      fetch('/api/getData')
+        .then(res => res.json())
+        .then((data) => {
+          let longMap = [];
+          let shortMap = [];
 
-    for (let k of Object.keys(data)) {
-      if( data[k].StartDayQty < 0) {
-          longMap.set(k, data[k]);
-      }
-      else {
-          shortMap.set(k, data[k]);
-      }
-    }
-
-    this.setState({ longs:longMap, shorts: shortMap});
+          _.map(data, stock => {
+            if (stock.StartDayQty < 0) {
+              longMap.push(stock);
+            }
+            else {
+              shortMap.push(stock);
+            }
+          });
+          this2.setState({ longs: longMap, shorts: shortMap });
+        });
+    }, 500);
   }
 
   render() {
-    const { state } = this.state;
+    const { longs, shorts } = this.state;
     return (
       <div className="container-fluid">
-          <div className="row">
-            <div className="col-lg-6">
-                { state.longs ? <StockViewer data={state.longs}/> : ''}
-            </div>
-            <div className="col-lg-6">
-                { state.shorts ? <StockViewer data={state.shorts}/> : ''}
-            </div>
+        <div className="row">
+          <div className="col-lg-6">
+            {longs && <StockViewer data={longs} id="longs" />}
           </div>
+          <div className="col-lg-6">
+            {shorts && <StockViewer data={shorts} id="shorts" />}
+          </div>
+        </div>
       </div>
     );
   }
