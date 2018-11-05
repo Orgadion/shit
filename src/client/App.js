@@ -3,12 +3,14 @@ import './app.css';
 import StockViewer from "./components/stock-viewer/stock-viewer";
 
 export default class App extends Component {
-  state = { table: null };
+  state = { longs: null, shorts: null };
 
   componentDidMount() {
-    fetch('/api/getData')
-      .then(res => res.json())
-      .then(this.parseStocks.bind(this));
+      setInterval(function(){
+          fetch('/api/getData')
+              .then(res => res.json())
+              .then(this.parseStocks.bind(this));
+      }, 5000);
   }
 
   parseStocks(data) {
