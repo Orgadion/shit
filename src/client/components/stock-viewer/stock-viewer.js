@@ -6,9 +6,8 @@ class StockViewer extends React.Component {
 
   rowGetter = rowIdx => this.props.data[rowIdx];
 
-  createColumns(data) {
-    const firstStock = _.first(data);
-    const headers = _.keys(firstStock);
+  createColumns() {
+    const headers = _.keys(_.get(this,'props.cols',{}));
     return headers.map(header => ({
       key: header,
       name: header.toUpperCase()
@@ -17,7 +16,7 @@ class StockViewer extends React.Component {
 
   render() {
     const { data } = this.props;
-    const columns = this.createColumns(data);
+    const columns = this.createColumns();
     return (
       <ReactDataGrid
         enableCellSelect
@@ -25,6 +24,7 @@ class StockViewer extends React.Component {
         rowGetter={this.rowGetter}
         rowsCount={data.length}
         minHeight={800}
+        rowHeight={30}
       />);
   }
 }

@@ -1,0 +1,20 @@
+{
+  "cols": {
+    "longs": {
+      "Name": "",
+      "Long Value": "",
+      "% Longs": "",
+      "Amount": "",
+      "syn_diff": "",
+      "Percent": ""
+    },
+    "shorts": {
+      "Name": "",
+      "Short Value": "",
+      "% Shorts": "",
+      "Amount": "",
+      "syn_diff": "",
+      "Percent": ""
+    }
+  }
+}
