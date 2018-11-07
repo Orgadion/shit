@@ -1,20 +1,25 @@
 {
+  "deborah": {
+    "port": 8080
+  },
   "cols": {
     "longs": {
-      "Name": "",
-      "Long Value": "",
-      "% Longs": "",
-      "Amount": "",
-      "syn_diff": "",
-      "Percent": ""
+      "Name": "name",
+      "Long Value": "value",
+      "% Longs": "valuePer",
+      "Amount": "amount",
+      "syn_diff": "syn_diff"
     },
     "shorts": {
-      "Name": "",
-      "Short Value": "",
-      "% Shorts": "",
-      "Amount": "",
-      "syn_diff": "",
-      "Percent": ""
+      "Name": "name",
+      "Short Value": "value",
+      "% Shorts": "valuePer",
+      "Amount": "amount",
+      "syn_diff": "syn_diff"
     }
+  },
+  "ace": {
+    "token": "XXX",
+    "stockData": "http://localhost:4071/aoc/core/AocRT/getmanyfields?s=XXX&f=name,last,syn_diff"
   }
 }

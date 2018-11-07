@@ -19,6 +19,7 @@
     "express": "^4.16.3",
     "immutable": "^3.8.2",
     "jquery": "^3.3.1",
+    "node-fetch": "^2.2.1",
     "popper.js": "^1.14.4",
     "react": "^16.5.2",
     "react-data-grid": "^5.0.1",

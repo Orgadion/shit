@@ -7,29 +7,20 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = { longs: [], shorts: [] };
+    this.config = {};
   }
 
   componentDidMount() {
-    const this2 = this;
+    const app = this;
     this.getConfig();
     setInterval(function () {
       fetch('/api/getData')
         .then(res => res.json())
         .then((data) => {
-          let longMap = [];
-          let shortMap = [];
-
-          _.map(data, stock => {
-            if (stock.StartDayQty < 0) {
-              longMap.push(stock);
-            }
-            else {
-              shortMap.push(stock);
-            }
-          });
-          this2.setState({ longs: longMap, shorts: shortMap });
+            //console.log("app state", {state: longs});
+            app.setState({ longs: _.values(data.longs.data), shorts: _.values(data.shorts.data) });
         });
-    }, 500);
+    }, 1000);
   }
 
   getConfig(){
@@ -44,14 +35,16 @@ export default class App extends Component {
 
   render() {
     const { longs, shorts } = this.state;
+
+    const cols = this.config.cols || { longs:{}, shorts:{} };
     return (
       <div className="container-fluid">
         <div className="row">
           <div className="col-lg-6">
-            {longs && <StockViewer data={longs} cols={this.config.cols.longs} id="longs" />}
+            {longs && <StockViewer data={longs} cols={cols.longs} id="longs" />}
           </div>
           <div className="col-lg-6">
-            {shorts && <StockViewer data={shorts} cols={this.config.cols.shorts} id="shorts" />}
+            {shorts && <StockViewer data={shorts} cols={cols.shorts} id="shorts" />}
           </div>
         </div>
       </div>
