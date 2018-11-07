@@ -17,7 +17,7 @@ export default class App extends Component {
       fetch('/api/getData')
         .then(res => res.json())
         .then((data) => {
-            //console.log("app state", {state: longs});
+           // console.log("app state", {state: data});
             app.setState({ longs: _.values(data.longs.data), shorts: _.values(data.shorts.data) });
         });
     }, 1000);
@@ -28,7 +28,7 @@ export default class App extends Component {
   fetch('/api/getCols')
       .then(res => res.json())
       .then((data) => {
-          console.log(data);
+          //console.log(data);
           this.config = data;
       });
   }
@@ -41,10 +41,10 @@ export default class App extends Component {
       <div className="container-fluid">
         <div className="row">
           <div className="col-lg-6">
-            {longs && <StockViewer data={longs} cols={cols.longs} id="longs" />}
+            {longs && <StockViewer  className={'longs'} data={longs} cols={cols.longs} reverse={true}  id="longs"/>}
           </div>
           <div className="col-lg-6">
-            {shorts && <StockViewer data={shorts} cols={cols.shorts} id="shorts" />}
+            {shorts && <StockViewer className={'shorts'} data={shorts} cols={cols.shorts} id="shorts"/>}
           </div>
         </div>
       </div>

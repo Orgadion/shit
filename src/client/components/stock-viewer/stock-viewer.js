@@ -1,40 +1,78 @@
+import {Formatters} from "./formatters";
+
 const ReactDataGrid = require('react-data-grid');
 const React = require('react');
 import _ from 'lodash';
 
 class StockViewer extends React.Component {
-
-  rowGetter = rowIdx => this.props.data[rowIdx];
-
-  createColumns() {
-    const cols = _.get(this,'props.cols',{});
-    const headers = _.keys(cols);
-    const res =  headers.map(header => ({
-        key: cols[header],
-        name: header.toUpperCase()
-    }));
-    return res;
-  }
-
-  render() {
-    const  data  = this.props.data;
-    console.log("data state:", {data: data});
-    const columns = this.createColumns();
-    const can = !_.isEmpty(columns);
-    console.log("col state:", {canrender:can, cols: columns});
-    if(data && can) {
-        return (
-            <ReactDataGrid
-                enableCellSelect
-                columns={columns}
-                rowGetter={this.rowGetter}
-                rowsCount={data.length}
-                minHeight={800}
-                rowHeight={30}
-            />);
+    constructor(props, context) {
+        super(props, context)
+        this.sortRef = React.createRef();
+        let originalRows = this.props.data;
+        let rows = this.props.data.slice(0);
+        this.state = { originalRows, rows };
+        this.lastSort = {};
     }
 
-    return null;
+    componentWillReceiveProps(nextProps) {
+        // You don't have to do this check first, but it can help prevent an unneeded render
+        //if (nextProps.data !== this.state.originalRows) {
+            this.setState({ originalRows: nextProps.data, rows: nextProps.data.slice(0)});
+            if(this.sortRef.current && !_.isEmpty(this.lastSort))
+            {
+                //this.sortRef.current;
+                this.sortRef.current.setState({sortColumn:this.lastSort.sortColumn, sortDirection:this.lastSort.sortDirection})
+                this.sortRef.current.handleSort(this.lastSort.sortColumn, this.lastSort.sortDirection);
+            }
+        //}
+    }
+
+      createColumns() {
+        const cols = _.get(this,'props.cols',{});
+        const res =  _.keys(cols).map(header => ({
+            key: cols[header].key,
+            name: header.toUpperCase(),
+            sortable: cols[header].sortable || true,
+            formatter: cols[header].format != undefined ? Formatters[cols[header].format] : undefined
+        }));
+        return res;
+    }
+
+    handleGridSort = (sortColumn, sortDirection) => {
+        if(sortColumn && sortDirection) {
+            this.lastSort = {sortColumn, sortDirection};
+        }
+
+        const comparer = (a, b) => {
+            if (sortDirection === 'ASC') {
+                return (a[sortColumn] > b[sortColumn]) ? 1 : -1;
+            } else if (sortDirection === 'DESC') {
+                return (a[sortColumn] < b[sortColumn]) ? 1 : -1;
+            }
+        };
+
+        const rows = sortDirection === 'NONE' ? this.state.originalRows.slice(0) : this.state.originalRows.sort(comparer);
+        console.log('im sorting!',{sortColumn, sortDirection});
+
+        this.setState({rows });
+    };
+
+    rowGetter = rowIdx => this.state.rows[rowIdx];
+
+  render() {
+    const columns = this.createColumns();
+    const can = !_.isEmpty(columns);
+        return (
+            can && <ReactDataGrid
+                ref={this.sortRef}
+                enableCellSelect
+                columns={columns}
+                onGridSort={this.handleGridSort}
+                rowGetter={this.rowGetter}
+                rowsCount={this.state.rows.length}
+                minHeight={800}
+                rowHeight={30}
+            /> || null);
   }
 }
 

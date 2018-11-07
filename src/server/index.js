@@ -8,38 +8,43 @@ const mock = _.values(data);
 const bodyParser = require('body-parser');
 const stocks = {
     longs:{
-        sumValue:0,
         data: {}
     },
     shorts:{
-        sumValue:0,
         data: {}
     }
 };
 
-function updateStock(id, amount,fromStocks,toStocks = undefined, value = undefined ) {
-    const stock = fromStocks.data[id];
-    if(stock) {
-        fromStocks.sumValue -= amount;
-        delete fromStocks.data[id];
-    }
-    if(toStocks){
-        toStocks.sumValue += amount;
-        return value / toStocks.sumValue;
-    }
-    return undefined;
+function calcPrecentages(toUpdate) {
+    _.forEach(toUpdate,stocks => {
+        const sum = _.sumBy(_.values(stocks.data),'value');
+        _.forEach(stocks.data, stock =>stock.valuePer = stock.value / sum);
+    });
 }
 
-function getValuePer(id, amount, value) {
-    if(amount == 0) {
-        updateStock(id, amount,stocks.shorts);
-        return updateStock(id, amount, stocks.longs);;
+function updateStock(stock, fromStocks, toStocks = undefined) {
+    let toUpdate = [];
+    if(fromStocks.data[stock.id]) {
+        delete fromStocks.data[stock.id];
+        toUpdate.push(fromStocks);
     }
-    else if(amount > 0) {
-        return updateStock(id, amount,stocks.shorts, stocks.longs, value);
+    if(toStocks){
+        toStocks.data[stock.id] = stock;
+        toUpdate.push(toStocks);
+    }
+    calcPrecentages(toUpdate);
+}
+
+function updateStocksData(stockData) {
+    if(stockData.amount == 0) {
+        updateStock(stockData,stocks.shorts);
+        updateStock(stockData, stocks.longs);
+    }
+    else if(stockData.amount > 0) {
+        updateStock(stockData,stocks.shorts, stocks.longs);
     }
     else {
-        return updateStock(id, amount, stocks.shorts, stocks.longs, value);
+        updateStock(stockData, stocks.longs, stocks.shorts);
     }
 }
 
@@ -47,28 +52,17 @@ function makeStockData(stock, data) {
     //console.log("stock data", {stock:stock,data:data});
     const amount = stock.StartDayQty + stock.FillQty;
     const value = amount * data.GetManyFieldsResult.Values[1];
-    const valuePer = getValuePer(stock.securityID, amount, value);
 
-    if(!valuePer) {
-        return;
-    }
-
-
-    stockData = {
-        "id": stock.securityID,
-        "name": data.GetManyFieldsResult.Values[0],
-        "value": value,
-        "valuePer": valuePer,
-        "amount": amount,
-        "syn_diff": data.GetManyFieldsResult.Values[2]
+    let stockData = {
+        id: stock.securityID,
+        name: data.GetManyFieldsResult.Values[0],
+        value: value,
+        valuePer: 0,
+        amount: amount,
+        syn_diff: data.GetManyFieldsResult.Values[2]
     };
-    if(amount > 0) {
-        stocks.longs.data[stock.securityID] = stockData;
-    }
-    else {
-        stocks.shorts.data[stock.securityID] = stockData;
-    }
 
+    updateStocksData(stockData);
     //console.log("final stock data", {stockData:stockData})
 }
 

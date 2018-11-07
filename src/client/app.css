@@ -1,0 +1,10 @@
+body {
+    margin: auto;
+}
+.react-grid-Container .longs {
+    color: var(--green);
+    direction: ltr;
+}
+.react-grid-Container .shorts {
+    color: var(--red);
+}

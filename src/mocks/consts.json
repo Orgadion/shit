@@ -3,19 +3,45 @@
     "port": 8080
   },
   "cols": {
-    "longs": {
-      "Name": "name",
-      "Long Value": "value",
-      "% Longs": "valuePer",
-      "Amount": "amount",
-      "syn_diff": "syn_diff"
-    },
     "shorts": {
-      "Name": "name",
-      "Short Value": "value",
-      "% Shorts": "valuePer",
-      "Amount": "amount",
-      "syn_diff": "syn_diff"
+      "Name": {
+        "key":"name"
+      },
+      "Short Value":  {
+        "key":"value",
+        "format": 2
+      },
+      "% Short": {
+        "key":"valuePer",
+        "format": 0
+      },
+      "Amount": {
+        "key":"amount"
+      },
+      "syn_diff": {
+        "key":"syn_diff",
+        "format": 1
+      }
+    },
+    "longs": {
+      "syn_diff": {
+        "key":"syn_diff",
+        "format": 1
+      },
+      "Amount": {
+        "key":"amount"
+      },
+      "% Longs": {
+        "key":"valuePer",
+        "format": 0
+      },
+      "Long Value":  {
+        "key":"value",
+        "format": 2
+      },
+      "Name": {
+        "key":"name"
+      }
     }
   },
   "ace": {
