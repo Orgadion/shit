@@ -6,19 +6,75 @@ const data = require('../mocks/mock-table.json');
 const config = require('../mocks/consts.json');
 const mock = _.values(data);
 const bodyParser = require('body-parser');
-const stocks = {
-    longs:{
+const StocksDB = {
+    riskTable: {
+        // durationPerTotal: {
+        //     long: 0,
+        //     short: 0
+        // },
+        // durationTotal: {
+        //     long: 0,
+        //     short: 0
+        // },
+        total: {
+            long: 0,
+            short: 0
+        },
+        totalRisk: {
+            long: 0,
+            short: Number.NEGATIVE_INFINITY
+        },
+        maham: {
+            long: 0,
+            short: 0
+        },
+        risk: 0,
+
+    },
+    riskData:[],
+    longs: {
+        name:'long',
         data: {}
     },
-    shorts:{
+    shorts: {
+        name:'short',
         data: {}
     }
 };
 
+function getSums(stocks,fields) {
+    const res = {};
+    _.forEach(fields, f => res[f] = 0);
+    _.forEach(stocks,stock=>{
+        for (let i = 0; i < fields.length; i++) {
+            let val = stock[fields[i]];
+            if(!Number.isNaN(val)){
+                res[fields[i]] += val;
+            }
+        }
+    })
+    console.log("HI;",{res});
+
+    return res;
+}
+const sumFields = ['value', 'duration_bruto'];
 function calcPrecentages(toUpdate) {
-    _.forEach(toUpdate,stocks => {
-        const sum = _.sumBy(_.values(stocks.data),'value');
-        _.forEach(stocks.data, stock =>stock.valuePer = stock.value / sum);
+    _.forEach(toUpdate,stocksData => {
+        const sums = getSums(stocksData.data,sumFields);
+        const totalValue = sums[sumFields[0]];
+        const durationTotal = sums[sumFields[1]];
+        StocksDB.riskTable.total[stocksData.name] = totalValue;
+        //StocksDB.riskTable.durationTotal[stocksData.name] = durationTotal
+        let durPerTotal = 0;
+        _.forEach(stocksData.data, stock =>{
+            stock.valuePer = stock.value / totalValue;
+            durPerTotal += stock.valuePer * stock.duration_bruto;
+        });
+        //StocksDB.riskTable.durationPerTotal[stocksData.name] = durPerTotal;
+        StocksDB.riskTable.maham[stocksData.name] = durPerTotal / durationTotal;
+        StocksDB.riskTable.totalRisk[stocksData.name] = (durPerTotal / durationTotal) * totalValue;
+        StocksDB.riskTable.risk = StocksDB.riskTable.totalRisk.long / StocksDB.riskTable.totalRisk.short;
+        setRiskData();
     });
 }
 
@@ -37,14 +93,14 @@ function updateStock(stock, fromStocks, toStocks = undefined) {
 
 function updateStocksData(stockData) {
     if(stockData.amount == 0) {
-        updateStock(stockData,stocks.shorts);
-        updateStock(stockData, stocks.longs);
+        updateStock(stockData,StocksDB.shorts);
+        updateStock(stockData, StocksDB.longs);
     }
     else if(stockData.amount > 0) {
-        updateStock(stockData,stocks.shorts, stocks.longs);
+        updateStock(stockData,StocksDB.shorts, StocksDB.longs);
     }
     else {
-        updateStock(stockData, stocks.longs, stocks.shorts);
+        updateStock(stockData, StocksDB.longs, StocksDB.shorts);
     }
 }
 
@@ -59,6 +115,7 @@ function makeStockData(stock, data) {
         value: value,
         valuePer: 0,
         amount: amount,
+        duration_bruto: Number(data.GetManyFieldsResult.Values[3]),
         syn_diff: data.GetManyFieldsResult.Values[2]
     };
 
@@ -66,12 +123,24 @@ function makeStockData(stock, data) {
     //console.log("final stock data", {stockData:stockData})
 }
 
+function setRiskData() {
+    StocksDB.riskData = [
+        {name:config.riskTable.total.short,     value: StocksDB.riskTable.total.short},
+        {name:config.riskTable.total.long,      value: StocksDB.riskTable.total.long},
+        {name:config.riskTable.totalRisk.short, value: StocksDB.riskTable.totalRisk.short},
+        {name:config.riskTable.totalRisk.long,  value: StocksDB.riskTable.totalRisk.long},
+        {name:config.riskTable.maham.short,     value: StocksDB.riskTable.maham.short},
+        {name:config.riskTable.maham.long,      value: StocksDB.riskTable.maham.long},
+        {name:config.riskTable.risk,            value: StocksDB.riskTable.risk},
+    ];
+}
+
 app.use(express.static('dist'));
 app.use(bodyParser.json())
 
 app.get('/api/getData', (req, res) => {
-   // console.log(stocks);
-  return res.send(stocks);
+   // console.log(StocksDB);
+    return res.send(StocksDB);
 });
 
 app.get('/api/getCols', (req, res) => {
