@@ -27,12 +27,13 @@ class StockViewer extends React.Component {
         //}
     }
 
-      createColumns() {
+    createColumns() {
         const cols = _.get(this,'props.cols',{});
         const res =  _.keys(cols).map(header => ({
             key: cols[header].key,
             name: header.toUpperCase(),
             sortable: cols[header].sortable || true,
+            resizable: true,
             formatter: cols[header].format != undefined ? Formatters[cols[header].format] : undefined
         }));
         return res;
@@ -59,8 +60,10 @@ class StockViewer extends React.Component {
 
     rowGetter = rowIdx => this.state.rows[rowIdx];
 
-  render() {
-    const columns = this.createColumns();
+    render() {
+        window.dispatchEvent(new Event('resize'));
+
+        const columns = this.createColumns();
     const can = !_.isEmpty(columns);
         return (
             can && <ReactDataGrid
@@ -71,9 +74,9 @@ class StockViewer extends React.Component {
                 rowGetter={this.rowGetter}
                 rowsCount={this.state.rows.length}
                 minHeight={800}
-                rowHeight={30}
+                rowHeight={20}
             /> || null);
-  }
+    }
 }
 
 export default StockViewer;

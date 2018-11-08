@@ -53,7 +53,6 @@ function getSums(stocks,fields) {
             }
         }
     })
-    console.log("HI;",{res});
 
     return res;
 }
